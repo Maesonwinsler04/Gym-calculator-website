@@ -33,6 +33,32 @@
   <h2>Progress Chart</h2>
   <canvas id="progressChart" width="400" height="200"></canvas>
 
+  <h2>Workout Log</h2>
+  <label>Exercise Name:</label>
+  <input type="text" id="exerciseName" placeholder="e.g., Bench Press">
+  
+  <label>Weight (lbs):</label>
+  <input type="number" id="logWeight">
+  
+  <label>Reps:</label>
+  <input type="number" id="logReps">
+  
+  <label>Date:</label>
+  <input type="date" id="workoutDate">
+  
+  <button onclick="logWorkout()">Log Workout</button>
+  <div id="workoutHistory"></div>
+
+  <h2>Body Weight Log</h2>
+  <label>Weight (lbs):</label>
+  <input type="number" id="bodyWeight">
+  
+  <label>Date:</label>
+  <input type="date" id="weightDate">
+  
+  <button onclick="logBodyWeight()">Log Weight</button>
+  <div id="weightHistory"></div>
+
   <script src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
