@@ -23,29 +23,6 @@ function calculateBMI() {
   }
 }
 
-const ctx = document.getElementById('progressChart').getContext('2d');
-const progressChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: ['January', 'February', 'March', 'April', 'May'],
-        datasets: [{
-            label: 'Weight Lifted',
-            data: [150, 160, 170, 180, 190],
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-            fill: false
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-
 function logWorkout() {
     const exerciseName = document.getElementById('exerciseName').value;
     const weight = document.getElementById('logWeight').value;
@@ -111,6 +88,28 @@ function displayWeightHistory() {
 }
 
 window.addEventListener('load', function() {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    const progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May'],
+            datasets: [{
+                label: 'Weight Lifted',
+                data: [150, 160, 170, 180, 190],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
     displayWorkoutHistory();
     displayWeightHistory();
 });
