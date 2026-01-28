@@ -1,0 +1,35 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  text-align: center;
+  padding: 40px;
+}
+
+input {
+  padding: 8px;
+  margin: 5px;
+  width: 150px;
+}
+
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #0056b3; /* Change to a darker shade */
+  transform: scale(1.05); /* Slightly enlarge the button */
+}
+
+input:focus {
+  border: 2px solid #007bff; /* Highlight border on focus */
+  transition: border 0.3s ease;
+}
+
+@media (max-width: 600px) {
+    input, button {
+        width: 100%;
+    }
+}
