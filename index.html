@@ -65,15 +65,8 @@
 
     <section class="card card-wide">
       <div class="card-header">
-        <h2>Progress Charts</h2>
-        <div class="icon">📈</div>
-      </div>
-      
-      <div class="chart-tabs">
-        <button class="chart-tab active" onclick="switchChart('bodyweight')">Body Weight</button>
-        <button class="chart-tab" onclick="switchChart('bench')">Bench Press</button>
-        <button class="chart-tab" onclick="switchChart('squat')">Squat</button>
-        <button class="chart-tab" onclick="switchChart('deadlift')">Deadlift</button>
+        <h2>Weight Progress</h2>
+        <div class="icon">📉</div>
       </div>
       
       <div class="progress-grid">
@@ -101,6 +94,22 @@
       
       <div class="chart-container-wrapper">
         <canvas id="progressChart"></canvas>
+      </div>
+    </section>
+
+    <section class="card card-wide">
+      <div class="card-header">
+        <h2>AI Fitness Coach</h2>
+        <div class="icon">🤖</div>
+      </div>
+      <div class="ai-chat-container">
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-wrapper">
+          <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything about fitness, workouts, nutrition...">
+          <button class="btn btn-primary chat-send-btn" onclick="sendMessage()">
+            <span>Send</span>
+          </button>
+        </div>
       </div>
     </section>
 

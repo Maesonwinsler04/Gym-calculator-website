@@ -1,6 +1,5 @@
 // Global chart variable
 let progressChart = null;
-let currentChartType = 'bodyweight';
 
 function calculate1RM() {
   const weight = document.getElementById("weight").value;
@@ -61,7 +60,6 @@ function logWorkout() {
     
     displayWorkoutHistory();
     updateDashboardStats();
-    updateChart(currentChartType);
     
     document.getElementById('exerciseName').value = '';
     document.getElementById('logWeight').value = '';
@@ -101,7 +99,7 @@ function logBodyWeight() {
     sessionStorage.setItem('bodyWeights', JSON.stringify(weights));
     
     displayWeightHistory();
-    updateChart('bodyweight');
+    updateWeightChart();
     
     document.getElementById('bodyWeight').value = '';
     document.getElementById('weightDate').value = '';
@@ -193,23 +191,25 @@ function animateValue(id, start, end, duration) {
     }, stepTime);
 }
 
-function switchChart(chartType) {
-    currentChartType = chartType;
-    
-    // Update active tab
-    document.querySelectorAll('.chart-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    // Update chart
-    updateChart(chartType);
-}
-
-function updateChart(chartType) {
+function updateWeightChart() {
     const ctx = document.getElementById('progressChart').getContext('2d');
     
-    let chartData = getChartData(chartType);
+    let weights = JSON.parse(sessionStorage.getItem('bodyWeights')) || [];
+    
+    let chartData = {
+        labels: ['No Data'],
+        data: [0]
+    };
+    
+    if (weights.length > 0) {
+        // Sort by date
+        weights.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        chartData = {
+            labels: weights.map(w => w.date),
+            data: weights.map(w => parseFloat(w.weight))
+        };
+    }
     
     if (progressChart) {
         progressChart.destroy();
@@ -224,7 +224,7 @@ function updateChart(chartType) {
         data: {
             labels: chartData.labels,
             datasets: [{
-                label: chartData.label,
+                label: 'Body Weight (lbs)',
                 data: chartData.data,
                 borderColor: '#ff3366',
                 backgroundColor: 'rgba(255, 51, 102, 0.1)',
@@ -277,7 +277,7 @@ function updateChart(chartType) {
             },
             scales: {
                 y: {
-                    beginAtZero: true,
+                    beginAtZero: false,
                     grid: {
                         color: '#2a2a2a',
                         lineWidth: 1
@@ -314,67 +314,132 @@ function updateChart(chartType) {
     });
 }
 
-function getChartData(chartType) {
-    if (chartType === 'bodyweight') {
-        let weights = JSON.parse(sessionStorage.getItem('bodyWeights')) || [];
+// AI Chat Functionality
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (message === '') return;
+    
+    // Clear input
+    input.value = '';
+    
+    // Add user message to chat
+    addMessageToChat('user', message);
+    
+    // Show loading indicator
+    const loadingId = addMessageToChat('assistant', '<div class="loading-dots"><span></span><span></span><span></span></div>');
+    
+    try {
+        // Get user's workout data for context
+        const workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
+        const weights = JSON.parse(sessionStorage.getItem('bodyWeights')) || [];
         
-        if (weights.length === 0) {
-            return {
-                label: 'Body Weight (lbs)',
-                labels: ['No Data'],
-                data: [0]
-            };
+        let contextInfo = '';
+        if (workouts.length > 0 || weights.length > 0) {
+            contextInfo = `\n\nUser's fitness data:\n`;
+            if (workouts.length > 0) {
+                contextInfo += `- Total workouts logged: ${workouts.length}\n`;
+                const exercises = [...new Set(workouts.map(w => w.exercise))];
+                contextInfo += `- Exercises tracked: ${exercises.join(', ')}\n`;
+            }
+            if (weights.length > 0) {
+                const sortedWeights = weights.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const latestWeight = sortedWeights[sortedWeights.length - 1];
+                contextInfo += `- Latest body weight: ${latestWeight.weight} lbs on ${latestWeight.date}\n`;
+            }
         }
         
-        // Sort by date
-        weights.sort((a, b) => new Date(a.date) - new Date(b.date));
+        // Call Anthropic API
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1000,
+                messages: [{
+                    role: 'user',
+                    content: `You are a knowledgeable and motivating fitness coach. Help users with workout advice, exercise form, nutrition tips, and fitness planning. Be encouraging and supportive.${contextInfo}\n\nUser question: ${message}`
+                }]
+            })
+        });
         
-        return {
-            label: 'Body Weight (lbs)',
-            labels: weights.map(w => w.date),
-            data: weights.map(w => parseFloat(w.weight))
-        };
-    } else {
-        // Exercise-specific chart
-        let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
-        
-        // Map chart type to exercise name
-        let exerciseMap = {
-            'bench': 'Bench Press',
-            'squat': 'Squat',
-            'deadlift': 'Deadlift'
-        };
-        
-        let exerciseName = exerciseMap[chartType];
-        let exerciseWorkouts = workouts.filter(w => 
-            w.exercise.toLowerCase().includes(chartType) || 
-            w.exercise.toLowerCase() === exerciseName.toLowerCase()
-        );
-        
-        if (exerciseWorkouts.length === 0) {
-            return {
-                label: `${exerciseName} (lbs)`,
-                labels: ['No Data'],
-                data: [0]
-            };
+        if (!response.ok) {
+            throw new Error('Failed to get response from AI');
         }
         
-        // Sort by date
-        exerciseWorkouts.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const data = await response.json();
+        const aiResponse = data.content[0].text;
         
-        return {
-            label: `${exerciseName} (lbs)`,
-            labels: exerciseWorkouts.map(w => w.date),
-            data: exerciseWorkouts.map(w => parseFloat(w.weight))
-        };
+        // Remove loading indicator and add AI response
+        removeMessage(loadingId);
+        addMessageToChat('assistant', aiResponse);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        removeMessage(loadingId);
+        addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again.');
     }
+}
+
+function addMessageToChat(role, content) {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    // Remove empty state if present
+    const emptyState = chatMessages.querySelector('.chat-empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    const messageDiv = document.createElement('div');
+    const messageId = 'msg-' + Date.now();
+    messageDiv.id = messageId;
+    messageDiv.className = `chat-message ${role}`;
+    messageDiv.innerHTML = content;
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    return messageId;
+}
+
+function removeMessage(messageId) {
+    const message = document.getElementById(messageId);
+    if (message) {
+        message.remove();
+    }
+}
+
+// Allow Enter key to send message
+document.addEventListener('DOMContentLoaded', function() {
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    }
+});
+
+function initializeChat() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML = `
+        <div class="chat-empty-state">
+            <h3>💪 Your AI Fitness Coach</h3>
+            <p>Ask me anything about workouts, nutrition, exercise form, or fitness goals!</p>
+        </div>
+    `;
 }
 
 window.addEventListener('load', function() {
     displayWorkoutHistory();
     displayWeightHistory();
     updateDashboardStats();
-    updateChart('bodyweight');
+    updateWeightChart();
+    initializeChat();
     
     // Get current stats for animation
     let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
