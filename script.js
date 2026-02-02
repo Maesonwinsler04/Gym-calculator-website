@@ -215,8 +215,8 @@ function updateWeightChart() {
         progressChart.destroy();
     }
     
-    Chart.defaults.color = '#999999';
-    Chart.defaults.borderColor = '#2a2a2a';
+    Chart.defaults.color = '#9ca3af';
+    Chart.defaults.borderColor = '#30363d';
     Chart.defaults.font.family = "'Archivo', sans-serif";
     
     progressChart = new Chart(ctx, {
@@ -226,18 +226,18 @@ function updateWeightChart() {
             datasets: [{
                 label: 'Body Weight (lbs)',
                 data: chartData.data,
-                borderColor: '#ff3366',
-                backgroundColor: 'rgba(255, 51, 102, 0.1)',
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 6,
-                pointBackgroundColor: '#ff3366',
-                pointBorderColor: '#ffffff',
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#f9fafb',
                 pointBorderWidth: 2,
                 pointHoverRadius: 8,
-                pointHoverBackgroundColor: '#ff3366',
-                pointHoverBorderColor: '#ffffff',
+                pointHoverBackgroundColor: '#3b82f6',
+                pointHoverBorderColor: '#f9fafb',
                 pointHoverBorderWidth: 3
             }]
         },
@@ -253,15 +253,15 @@ function updateWeightChart() {
                             size: 14,
                             weight: '600'
                         },
-                        color: '#ffffff',
+                        color: '#f9fafb',
                         padding: 20
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(20, 20, 20, 0.9)',
-                    titleColor: '#ffffff',
-                    bodyColor: '#00ff88',
-                    borderColor: '#ff3366',
+                    backgroundColor: 'rgba(22, 27, 34, 0.95)',
+                    titleColor: '#f9fafb',
+                    bodyColor: '#06b6d4',
+                    borderColor: '#3b82f6',
                     borderWidth: 1,
                     padding: 12,
                     displayColors: false,
@@ -279,11 +279,11 @@ function updateWeightChart() {
                 y: {
                     beginAtZero: false,
                     grid: {
-                        color: '#2a2a2a',
+                        color: '#30363d',
                         lineWidth: 1
                     },
                     ticks: {
-                        color: '#999999',
+                        color: '#9ca3af',
                         font: {
                             size: 12,
                             weight: '600'
@@ -293,11 +293,11 @@ function updateWeightChart() {
                 },
                 x: {
                     grid: {
-                        color: '#2a2a2a',
+                        color: '#30363d',
                         lineWidth: 1
                     },
                     ticks: {
-                        color: '#999999',
+                        color: '#9ca3af',
                         font: {
                             size: 12,
                             weight: '600'
