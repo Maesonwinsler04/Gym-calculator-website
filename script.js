@@ -316,10 +316,16 @@ function updateWeightChart() {
 
 // AI Chat Functionality
 async function sendMessage() {
+    console.log('sendMessage called');
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
     
-    if (message === '') return;
+    console.log('Message:', message);
+    
+    if (message === '') {
+        console.log('Message is empty, returning');
+        return;
+    }
     
     // Clear input
     input.value = '';
@@ -331,6 +337,7 @@ async function sendMessage() {
     const loadingId = addMessageToChat('assistant', '<div class="loading-dots"><span></span><span></span><span></span></div>');
     
     try {
+        console.log('Preparing API request...');
         // Get user's workout data for context
         const workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
         const weights = JSON.parse(sessionStorage.getItem('bodyWeights')) || [];
@@ -350,6 +357,7 @@ async function sendMessage() {
             }
         }
         
+        console.log('Making API request to Anthropic...');
         // Call Anthropic API
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
@@ -366,11 +374,14 @@ async function sendMessage() {
             })
         });
         
+        console.log('API response received:', response.status);
+        
         if (!response.ok) {
             throw new Error('Failed to get response from AI');
         }
         
         const data = await response.json();
+        console.log('API data parsed successfully');
         const aiResponse = data.content[0].text;
         
         // Remove loading indicator and add AI response
@@ -378,9 +389,9 @@ async function sendMessage() {
         addMessageToChat('assistant', aiResponse);
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error in sendMessage:', error);
         removeMessage(loadingId);
-        addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again.');
+        addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again. Error: ' + error.message);
     }
 }
 
@@ -426,20 +437,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeChat() {
     const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) {
+        console.error('Chat messages element not found!');
+        return;
+    }
+    
+    console.log('Initializing chat...');
     chatMessages.innerHTML = `
         <div class="chat-empty-state">
             <h3>💪 Your AI Fitness Coach</h3>
             <p>Ask me anything about workouts, nutrition, exercise form, or fitness goals!</p>
         </div>
     `;
+    console.log('Chat initialized successfully');
 }
 
 window.addEventListener('load', function() {
+    console.log('Page loaded, starting initialization...');
+    
     displayWorkoutHistory();
     displayWeightHistory();
     updateDashboardStats();
     updateWeightChart();
-    initializeChat();
+    
+    // Initialize chat with a small delay to ensure DOM is ready
+    setTimeout(() => {
+        initializeChat();
+    }, 100);
     
     // Get current stats for animation
     let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
@@ -453,4 +477,6 @@ window.addEventListener('load', function() {
         animateValue('totalWorkouts', 0, totalWorkouts, 1000);
         animateValue('totalVolume', 0, totalVolume, 1500);
     }, 500);
+    
+    console.log('All initialization complete');
 });
