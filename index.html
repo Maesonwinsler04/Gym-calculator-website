@@ -123,26 +123,27 @@
         <h2>Workout Log</h2>
         <div class="icon">🏋️</div>
       </div>
-      <div class="input-grid">
+
+      <div class="input-grid" id="workoutForm">
         <div class="input-wrapper">
-          <label>Exercise Name</label>
-          <input type="text" id="exerciseName" placeholder="Bench Press">
-        </div>
-        <div class="input-wrapper">
-          <label>Weight (lbs)</label>
-          <input type="number" id="logWeight" placeholder="185">
-        </div>
-        <div class="input-wrapper">
-          <label>Reps</label>
-          <input type="number" id="logReps" placeholder="10">
+          <label>Workout Name</label>
+          <input type="text" id="workoutName" placeholder="Chest & Triceps">
         </div>
         <div class="input-wrapper">
           <label>Date</label>
           <input type="date" id="workoutDate">
         </div>
+        <div class="input-wrapper">
+          <label>Add Exercises</label>
+          <div id="exercisesContainer"></div>
+          <div style="margin-top:10px; display:flex; gap:8px;">
+            <button class="btn btn-secondary" type="button" onclick="addExerciseRow()">Add Exercise</button>
+            <button class="btn" type="button" onclick="saveWorkout()">Save Workout</button>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="logWorkout()">Log Workout</button>
-      <div id="workoutHistory"></div>
+
+      <div id="workoutLog"></div>
     </section>
 
     <section class="card">

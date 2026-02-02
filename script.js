@@ -66,6 +66,82 @@ function logWorkout() {
     document.getElementById('logReps').value = '';
     document.getElementById('workoutDate').value = '';
 }
+// Multi-exercise workout logging
+function addExerciseRow(prefill = {}) {
+    const container = document.getElementById('exercisesContainer');
+    const id = 'ex-' + Date.now() + Math.floor(Math.random() * 1000);
+
+    const row = document.createElement('div');
+    row.className = 'exercise-row';
+    row.id = id;
+    row.innerHTML = `
+        <div class="input-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr; gap:8px; align-items:center; margin-bottom:8px;">
+          <input type="text" class="ex-name" placeholder="Exercise (e.g. Bench Press)" value="${prefill.name || ''}">
+          <input type="number" class="ex-sets" placeholder="Sets" value="${prefill.sets || ''}">
+          <input type="number" class="ex-reps" placeholder="Reps" value="${prefill.reps || ''}">
+          <input type="number" class="ex-weight" placeholder="Weight (lbs)" value="${prefill.weight || ''}">
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button class="btn btn-secondary" type="button" onclick="removeExerciseRow('${id}')">Remove</button>
+        </div>
+    `;
+
+    container.appendChild(row);
+}
+
+function removeExerciseRow(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+function saveWorkout() {
+    const name = (document.getElementById('workoutName').value || '').trim();
+    const date = document.getElementById('workoutDate').value;
+    const container = document.getElementById('exercisesContainer');
+
+    if (!name || !date) {
+        alert('Please provide a workout name and date.');
+        return;
+    }
+
+    const rows = Array.from(container.querySelectorAll('.exercise-row'));
+    if (rows.length === 0) {
+        alert('Add at least one exercise.');
+        return;
+    }
+
+    const exercises = rows.map(r => ({
+        name: (r.querySelector('.ex-name').value || '').trim(),
+        sets: (r.querySelector('.ex-sets').value || '').trim(),
+        reps: (r.querySelector('.ex-reps').value || '').trim(),
+        weight: (r.querySelector('.ex-weight').value || '').trim(),
+    })).filter(e => e.name !== '');
+
+    if (exercises.length === 0) {
+        alert('Add at least one valid exercise.');
+        return;
+    }
+
+    const workout = {
+        id: 'w-' + Date.now(),
+        name,
+        date,
+        exercises
+    };
+
+    // read existing logs from localStorage and append
+    const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+    logs.push(workout);
+    localStorage.setItem('workoutLogs', JSON.stringify(logs));
+
+    // clear form
+    document.getElementById('workoutName').value = '';
+    document.getElementById('workoutDate').value = '';
+    container.innerHTML = '';
+
+    renderWorkoutLog();
+    updateDashboardStats();
+}
 
 function displayWorkoutHistory() {
     let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
@@ -83,6 +159,51 @@ function displayWorkoutHistory() {
     
     historyHTML += '</ul>';
     document.getElementById('workoutHistory').innerHTML = historyHTML;
+}
+function renderWorkoutLog() {
+        const container = document.getElementById('workoutLog');
+        const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+
+        if (logs.length === 0) {
+                container.innerHTML = '<h3>No saved workouts yet</h3>';
+                return;
+        }
+
+        let html = '<h3>Saved Workouts</h3><div class="workout-list">';
+        // show newest first
+        logs.slice().reverse().forEach(w => {
+                const totalExercises = w.exercises.length;
+                let totalVolume = 0;
+                w.exercises.forEach(e => {
+                        const wgt = parseFloat(e.weight) || 0;
+                        const reps = parseFloat(e.reps) || 0;
+                        const sets = parseFloat(e.sets) || 1;
+                        totalVolume += wgt * reps * sets;
+                });
+
+                html += `
+                    <div class="workout-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                            <div>
+                                <strong>${w.name}</strong>
+                                <div style="color: #9ca3af; font-size:0.95rem;">${w.date} · ${totalExercises} exercises · ${Math.round(totalVolume).toLocaleString()} lbs</div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-secondary" onclick="viewWorkoutDetails('${w.id}')">View</button>
+                                <button class="btn" onclick="deleteWorkout('${w.id}')">Delete</button>
+                            </div>
+                        </div>
+                        <div id="details-${w.id}" class="workout-details" style="display:none; margin-top:12px;">
+                            <ul style="list-style:none; padding:0; margin:0;">
+                                ${w.exercises.map(e => `<li style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.03)">${e.name} — ${e.sets || '-'} sets × ${e.reps || '-'} reps @ ${e.weight || '-'} lbs</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
 }
 
 function logBodyWeight() {
@@ -143,6 +264,45 @@ function updateDashboardStats() {
     let uniqueExercises = [...new Set(workouts.map(w => w.exercise))];
     document.getElementById('personalBests').textContent = uniqueExercises.length;
 }
+function updateDashboardStats() {
+    // Merge legacy single-entry sessionStorage 'workouts' (if any) into new logs for stats
+    const legacy = JSON.parse(sessionStorage.getItem('workouts')) || [];
+    const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+
+    // Count total workouts (each saved workout counts as 1, legacy entries count as 1 each)
+    const totalWorkouts = logs.length + legacy.length;
+    document.getElementById('totalWorkouts').textContent = totalWorkouts;
+
+    // Total volume: sum over all exercises
+    let totalVolume = 0;
+    logs.forEach(w => {
+        w.exercises.forEach(e => {
+            const sets = parseFloat(e.sets) || 1;
+            const reps = parseFloat(e.reps) || parseFloat(e.reps) || 0;
+            const weight = parseFloat(e.weight) || 0;
+            totalVolume += sets * reps * weight;
+        });
+    });
+    // include legacy single-ex entries
+    legacy.forEach(w => {
+        totalVolume += (parseFloat(w.weight) || 0) * (parseFloat(w.reps) || 0);
+    });
+
+    document.getElementById('totalVolume').textContent = Math.round(totalVolume).toLocaleString();
+
+    // Calculate streak based on all dates available
+    const allDates = [];
+    logs.forEach(w => allDates.push(w.date));
+    legacy.forEach(w => allDates.push(w.date));
+    const streak = calculateStreakFromDates(allDates);
+    document.getElementById('currentStreak').textContent = streak;
+
+    // Personal bests approximated by unique exercise names
+    const exerciseSet = new Set();
+    logs.forEach(w => w.exercises.forEach(e => exerciseSet.add(e.name)));
+    legacy.forEach(w => exerciseSet.add(w.exercise));
+    document.getElementById('personalBests').textContent = exerciseSet.size;
+}
 
 function calculateStreak(workouts) {
     if (workouts.length === 0) return 0;
@@ -171,6 +331,34 @@ function calculateStreak(workouts) {
         }
     }
     
+    return streak;
+}
+function calculateStreakFromDates(dates) {
+    if (!dates || dates.length === 0) return 0;
+
+    // normalize and unique dates
+    const uniq = [...new Set(dates.map(d => (new Date(d)).toISOString().slice(0,10)))].map(s => new Date(s));
+    uniq.sort((a,b) => b - a);
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    let streak = 0;
+    let cursor = new Date(today);
+
+    for (let dt of uniq) {
+        dt.setHours(0,0,0,0);
+        const diff = Math.floor((cursor - dt) / (1000*60*60*24));
+        if (diff === 0) {
+            if (streak === 0) streak = 1;
+        } else if (diff === 1) {
+            streak++;
+            cursor = new Date(dt);
+        } else if (diff > 1) {
+            break;
+        }
+    }
+
     return streak;
 }
 
@@ -338,17 +526,21 @@ async function sendMessage() {
     
     try {
         console.log('Preparing API request...');
-        // Get user's workout data for context
-        const workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
+        // Get user's workout data for context (support new logs + legacy entries)
+        const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+        const legacy = JSON.parse(sessionStorage.getItem('workouts')) || [];
         const weights = JSON.parse(sessionStorage.getItem('bodyWeights')) || [];
         
         let contextInfo = '';
         if (workouts.length > 0 || weights.length > 0) {
             contextInfo = `\n\nUser's fitness data:\n`;
-            if (workouts.length > 0) {
-                contextInfo += `- Total workouts logged: ${workouts.length}\n`;
-                const exercises = [...new Set(workouts.map(w => w.exercise))];
-                contextInfo += `- Exercises tracked: ${exercises.join(', ')}\n`;
+            const totalWorkouts = logs.length + legacy.length;
+            if (totalWorkouts > 0) {
+                contextInfo += `- Total workouts logged: ${totalWorkouts}\n`;
+                const exercises = new Set();
+                logs.forEach(w => w.exercises.forEach(e => exercises.add(e.name)));
+                legacy.forEach(w => exercises.add(w.exercise));
+                contextInfo += `- Exercises tracked: ${[...exercises].join(', ')}\n`;
             }
             if (weights.length > 0) {
                 const sortedWeights = weights.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -423,6 +615,20 @@ function removeMessage(messageId) {
     }
 }
 
+function viewWorkoutDetails(id) {
+    const el = document.getElementById('details-' + id);
+    if (!el) return;
+    el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+}
+
+function deleteWorkout(id) {
+    let logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+    logs = logs.filter(w => w.id !== id);
+    localStorage.setItem('workoutLogs', JSON.stringify(logs));
+    renderWorkoutLog();
+    updateDashboardStats();
+}
+
 // Allow Enter key to send message
 document.addEventListener('DOMContentLoaded', function() {
     const chatInput = document.getElementById('chatInput');
@@ -454,29 +660,41 @@ function initializeChat() {
 
 window.addEventListener('load', function() {
     console.log('Page loaded, starting initialization...');
-    
-    displayWorkoutHistory();
+
+    // Render workout log (new) and weight history
+    renderWorkoutLog();
+    // ensure there's an empty exercise row ready
+    addExerciseRow();
     displayWeightHistory();
     updateDashboardStats();
     updateWeightChart();
-    
+
     // Initialize chat with a small delay to ensure DOM is ready
     setTimeout(() => {
         initializeChat();
     }, 100);
-    
-    // Get current stats for animation
-    let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
-    let totalWorkouts = workouts.length;
-    let totalVolume = workouts.reduce((sum, workout) => {
-        return sum + (parseFloat(workout.weight) * parseFloat(workout.reps));
-    }, 0);
-    
+
+    // Get current stats for animation (merge new logs + legacy)
+    const logs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+    const legacy = JSON.parse(sessionStorage.getItem('workouts')) || [];
+    const totalWorkouts = logs.length + legacy.length;
+
+    let totalVolume = 0;
+    logs.forEach(w => w.exercises.forEach(e => {
+        const sets = parseFloat(e.sets) || 1;
+        const reps = parseFloat(e.reps) || 0;
+        const weight = parseFloat(e.weight) || 0;
+        totalVolume += sets * reps * weight;
+    }));
+    legacy.forEach(w => {
+        totalVolume += (parseFloat(w.weight) || 0) * (parseFloat(w.reps) || 0);
+    });
+
     // Animate the numbers
     setTimeout(() => {
         animateValue('totalWorkouts', 0, totalWorkouts, 1000);
-        animateValue('totalVolume', 0, totalVolume, 1500);
+        animateValue('totalVolume', 0, Math.round(totalVolume), 1500);
     }, 500);
-    
+
     console.log('All initialization complete');
 });
