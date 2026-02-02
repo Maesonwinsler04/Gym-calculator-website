@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APEX Fitness Tracker</title>
+  <title>Winser Lift</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -15,8 +15,8 @@
   <header class="hero">
     <div class="hero-content">
       <h1 class="title">
-        <span class="title-main">APEX</span>
-        <span class="title-sub">FITNESS TRACKER</span>
+        <span class="title-main">WINSER</span>
+        <span class="title-sub">LIFT</span>
       </h1>
       <p class="tagline">Track. Lift. Dominate.</p>
     </div>
@@ -65,9 +65,17 @@
 
     <section class="card card-wide">
       <div class="card-header">
-        <h2>Progression Dashboard</h2>
+        <h2>Progress Charts</h2>
         <div class="icon">📈</div>
       </div>
+      
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="switchChart('bodyweight')">Body Weight</button>
+        <button class="chart-tab" onclick="switchChart('bench')">Bench Press</button>
+        <button class="chart-tab" onclick="switchChart('squat')">Squat</button>
+        <button class="chart-tab" onclick="switchChart('deadlift')">Deadlift</button>
+      </div>
+      
       <div class="progress-grid">
         <div class="stat-card">
           <div class="stat-icon">💪</div>
@@ -90,34 +98,9 @@
           <div class="stat-label">Personal Records</div>
         </div>
       </div>
-      <div class="progress-bars">
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-exercise">Bench Press</span>
-            <span class="progress-weight">225 lbs</span>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: 85%"></div>
-          </div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-exercise">Squat</span>
-            <span class="progress-weight">315 lbs</span>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: 70%"></div>
-          </div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-exercise">Deadlift</span>
-            <span class="progress-weight">405 lbs</span>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: 92%"></div>
-          </div>
-        </div>
+      
+      <div class="chart-container-wrapper">
+        <canvas id="progressChart"></canvas>
       </div>
     </section>
 
@@ -169,5 +152,6 @@
   </main>
 
   <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
