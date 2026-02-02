@@ -8,16 +8,33 @@ function calculate1RM() {
   }
 
   const oneRepMax = weight * (1 + reps / 30);
-  document.getElementById("result").textContent =
-    "Estimated 1RM: " + oneRepMax.toFixed(1) + " lbs";
+  const resultElement = document.getElementById("result");
+  resultElement.style.animation = 'none';
+  setTimeout(() => {
+    resultElement.style.animation = '';
+  }, 10);
+  resultElement.textContent = "Estimated 1RM: " + oneRepMax.toFixed(1) + " lbs";
 }
 
 function calculateBMI() {
   const height = parseFloat(document.getElementById("height").value);
   const weight = parseFloat(document.getElementById("bmiWeight").value);
+  
   if (height > 0 && weight > 0) {
     const bmi = (weight / (height * height)) * 703;
-    document.getElementById("bmiResult").innerText = `Your BMI is ${bmi.toFixed(2)}`;
+    const resultElement = document.getElementById("bmiResult");
+    resultElement.style.animation = 'none';
+    setTimeout(() => {
+      resultElement.style.animation = '';
+    }, 10);
+    
+    let category = "";
+    if (bmi < 18.5) category = "Underweight";
+    else if (bmi < 25) category = "Normal";
+    else if (bmi < 30) category = "Overweight";
+    else category = "Obese";
+    
+    resultElement.textContent = `BMI: ${bmi.toFixed(1)} (${category})`;
   } else {
     alert("Please enter valid height and weight.");
   }
@@ -34,9 +51,9 @@ function logWorkout() {
         return;
     }
 
-    let workouts = JSON.parse(localStorage.getItem('workouts')) || [];
+    let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
     workouts.push({ exercise: exerciseName, weight, reps, date });
-    localStorage.setItem('workouts', JSON.stringify(workouts));
+    sessionStorage.setItem('workouts', JSON.stringify(workouts));
     
     displayWorkoutHistory();
     document.getElementById('exerciseName').value = '';
@@ -46,11 +63,17 @@ function logWorkout() {
 }
 
 function displayWorkoutHistory() {
-    let workouts = JSON.parse(localStorage.getItem('workouts')) || [];
+    let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
+    
+    if (workouts.length === 0) {
+        document.getElementById('workoutHistory').innerHTML = '';
+        return;
+    }
+    
     let historyHTML = '<h3>Workout History</h3><ul>';
     
-    workouts.slice().reverse().forEach(workout => {
-        historyHTML += `<li>${workout.date} - ${workout.exercise}: ${workout.weight} lbs x ${workout.reps} reps</li>`;
+    workouts.slice().reverse().forEach((workout, index) => {
+        historyHTML += `<li style="animation-delay: ${index * 0.05}s">${workout.date} - ${workout.exercise}: ${workout.weight} lbs × ${workout.reps} reps</li>`;
     });
     
     historyHTML += '</ul>';
@@ -66,9 +89,9 @@ function logBodyWeight() {
         return;
     }
 
-    let weights = JSON.parse(localStorage.getItem('bodyWeights')) || [];
+    let weights = JSON.parse(sessionStorage.getItem('bodyWeights')) || [];
     weights.push({ weight, date });
-    localStorage.setItem('bodyWeights', JSON.stringify(weights));
+    sessionStorage.setItem('bodyWeights', JSON.stringify(weights));
     
     displayWeightHistory();
     document.getElementById('bodyWeight').value = '';
@@ -76,11 +99,17 @@ function logBodyWeight() {
 }
 
 function displayWeightHistory() {
-    let weights = JSON.parse(localStorage.getItem('bodyWeights')) || [];
+    let weights = JSON.parse(sessionStorage.getItem('bodyWeights')) || [];
+    
+    if (weights.length === 0) {
+        document.getElementById('weightHistory').innerHTML = '';
+        return;
+    }
+    
     let historyHTML = '<h3>Weight History</h3><ul>';
     
-    weights.slice().reverse().forEach(entry => {
-        historyHTML += `<li>${entry.date} - ${entry.weight} lbs</li>`;
+    weights.slice().reverse().forEach((entry, index) => {
+        historyHTML += `<li style="animation-delay: ${index * 0.05}s">${entry.date} - ${entry.weight} lbs</li>`;
     });
     
     historyHTML += '</ul>';
@@ -89,27 +118,105 @@ function displayWeightHistory() {
 
 window.addEventListener('load', function() {
     const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    Chart.defaults.color = '#999999';
+    Chart.defaults.borderColor = '#2a2a2a';
+    Chart.defaults.font.family = "'Archivo', sans-serif";
+    
     const progressChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['January', 'February', 'March', 'April', 'May'],
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
             datasets: [{
-                label: 'Weight Lifted',
-                data: [150, 160, 170, 180, 190],
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 2,
-                fill: false
+                label: 'Bench Press (lbs)',
+                data: [185, 195, 205, 210, 225],
+                borderColor: '#ff3366',
+                backgroundColor: 'rgba(255, 51, 102, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointBackgroundColor: '#ff3366',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#ff3366',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        color: '#ffffff',
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#00ff88',
+                    borderColor: '#ff3366',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    titleFont: {
+                        size: 14,
+                        weight: '700'
+                    },
+                    bodyFont: {
+                        size: 16,
+                        weight: '600'
+                    }
+                }
+            },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    grid: {
+                        color: '#2a2a2a',
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        color: '#999999',
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        padding: 10
+                    }
+                },
+                x: {
+                    grid: {
+                        color: '#2a2a2a',
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        color: '#999999',
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        padding: 10
+                    }
                 }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
             }
         }
     });
+    
     displayWorkoutHistory();
     displayWeightHistory();
 });

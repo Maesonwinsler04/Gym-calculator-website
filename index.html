@@ -2,62 +2,123 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Gym Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEX Fitness Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h1>🏋️ Gym Calculator</h1>
-  <p>Simple tools for lifters</p>
-
-  <h2>1RM Calculator</h2>
-
-  <label>Weight Lifted (lbs):</label>
-  <input type="number" id="weight">
-
-  <label>Reps:</label>
-  <input type="number" id="reps">
-
-  <button onclick="calculate1RM()">Calculate</button>
-
-  <p id="result"></p>
-
-  <h2>BMI Calculator</h2>
-  <label>Height (inches):</label>
-  <input type="number" id="height">
-  <label>Weight (lbs):</label>
-  <input type="number" id="bmiWeight">
-  <button onclick="calculateBMI()">Calculate BMI</button>
-  <p id="bmiResult"></p>
-
-  <h2>Progress Chart</h2>
-  <canvas id="progressChart" width="400" height="200"></canvas>
-
-  <h2>Workout Log</h2>
-  <label>Exercise Name:</label>
-  <input type="text" id="exerciseName" placeholder="e.g., Bench Press">
+  <div class="grain-overlay"></div>
   
-  <label>Weight (lbs):</label>
-  <input type="number" id="logWeight">
-  
-  <label>Reps:</label>
-  <input type="number" id="logReps">
-  
-  <label>Date:</label>
-  <input type="date" id="workoutDate">
-  
-  <button onclick="logWorkout()">Log Workout</button>
-  <div id="workoutHistory"></div>
+  <header class="hero">
+    <div class="hero-content">
+      <h1 class="title">
+        <span class="title-main">APEX</span>
+        <span class="title-sub">FITNESS TRACKER</span>
+      </h1>
+      <p class="tagline">Track. Lift. Dominate.</p>
+    </div>
+  </header>
 
-  <h2>Body Weight Log</h2>
-  <label>Weight (lbs):</label>
-  <input type="number" id="bodyWeight">
-  
-  <label>Date:</label>
-  <input type="date" id="weightDate">
-  
-  <button onclick="logBodyWeight()">Log Weight</button>
-  <div id="weightHistory"></div>
+  <main class="dashboard">
+    <section class="card card-highlight">
+      <div class="card-header">
+        <h2>1RM Calculator</h2>
+        <div class="icon">💪</div>
+      </div>
+      <div class="input-group">
+        <div class="input-wrapper">
+          <label>Weight Lifted (lbs)</label>
+          <input type="number" id="weight" placeholder="225">
+        </div>
+        <div class="input-wrapper">
+          <label>Reps</label>
+          <input type="number" id="reps" placeholder="5">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="calculate1RM()">
+        <span>Calculate Max</span>
+      </button>
+      <div id="result" class="result"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>BMI Calculator</h2>
+        <div class="icon">📊</div>
+      </div>
+      <div class="input-group">
+        <div class="input-wrapper">
+          <label>Height (inches)</label>
+          <input type="number" id="height" placeholder="70">
+        </div>
+        <div class="input-wrapper">
+          <label>Weight (lbs)</label>
+          <input type="number" id="bmiWeight" placeholder="180">
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="calculateBMI()">Calculate BMI</button>
+      <div id="bmiResult" class="result"></div>
+    </section>
+
+    <section class="card card-wide">
+      <div class="card-header">
+        <h2>Progress Chart</h2>
+        <div class="icon">📈</div>
+      </div>
+      <div class="chart-container">
+        <canvas id="progressChart"></canvas>
+      </div>
+    </section>
+
+    <section class="card card-wide">
+      <div class="card-header">
+        <h2>Workout Log</h2>
+        <div class="icon">🏋️</div>
+      </div>
+      <div class="input-grid">
+        <div class="input-wrapper">
+          <label>Exercise Name</label>
+          <input type="text" id="exerciseName" placeholder="Bench Press">
+        </div>
+        <div class="input-wrapper">
+          <label>Weight (lbs)</label>
+          <input type="number" id="logWeight" placeholder="185">
+        </div>
+        <div class="input-wrapper">
+          <label>Reps</label>
+          <input type="number" id="logReps" placeholder="10">
+        </div>
+        <div class="input-wrapper">
+          <label>Date</label>
+          <input type="date" id="workoutDate">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="logWorkout()">Log Workout</button>
+      <div id="workoutHistory"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Body Weight Log</h2>
+        <div class="icon">⚖️</div>
+      </div>
+      <div class="input-group">
+        <div class="input-wrapper">
+          <label>Weight (lbs)</label>
+          <input type="number" id="bodyWeight" placeholder="175">
+        </div>
+        <div class="input-wrapper">
+          <label>Date</label>
+          <input type="date" id="weightDate">
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="logBodyWeight()">Log Weight</button>
+      <div id="weightHistory"></div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
