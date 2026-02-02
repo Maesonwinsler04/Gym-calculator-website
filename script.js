@@ -56,6 +56,7 @@ function logWorkout() {
     sessionStorage.setItem('workouts', JSON.stringify(workouts));
     
     displayWorkoutHistory();
+    updateDashboardStats();
     document.getElementById('exerciseName').value = '';
     document.getElementById('logWeight').value = '';
     document.getElementById('logReps').value = '';
@@ -116,107 +117,89 @@ function displayWeightHistory() {
     document.getElementById('weightHistory').innerHTML = historyHTML;
 }
 
-window.addEventListener('load', function() {
-    const ctx = document.getElementById('progressChart').getContext('2d');
+function updateDashboardStats() {
+    let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
     
-    Chart.defaults.color = '#999999';
-    Chart.defaults.borderColor = '#2a2a2a';
-    Chart.defaults.font.family = "'Archivo', sans-serif";
+    // Total workouts
+    document.getElementById('totalWorkouts').textContent = workouts.length;
     
-    const progressChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
-            datasets: [{
-                label: 'Bench Press (lbs)',
-                data: [185, 195, 205, 210, 225],
-                borderColor: '#ff3366',
-                backgroundColor: 'rgba(255, 51, 102, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 6,
-                pointBackgroundColor: '#ff3366',
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointHoverRadius: 8,
-                pointHoverBackgroundColor: '#ff3366',
-                pointHoverBorderColor: '#ffffff',
-                pointHoverBorderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        font: {
-                            size: 14,
-                            weight: '600'
-                        },
-                        color: '#ffffff',
-                        padding: 20
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(20, 20, 20, 0.9)',
-                    titleColor: '#ffffff',
-                    bodyColor: '#00ff88',
-                    borderColor: '#ff3366',
-                    borderWidth: 1,
-                    padding: 12,
-                    displayColors: false,
-                    titleFont: {
-                        size: 14,
-                        weight: '700'
-                    },
-                    bodyFont: {
-                        size: 16,
-                        weight: '600'
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: '#2a2a2a',
-                        lineWidth: 1
-                    },
-                    ticks: {
-                        color: '#999999',
-                        font: {
-                            size: 12,
-                            weight: '600'
-                        },
-                        padding: 10
-                    }
-                },
-                x: {
-                    grid: {
-                        color: '#2a2a2a',
-                        lineWidth: 1
-                    },
-                    ticks: {
-                        color: '#999999',
-                        font: {
-                            size: 12,
-                            weight: '600'
-                        },
-                        padding: 10
-                    }
-                }
-            },
-            animation: {
-                duration: 1500,
-                easing: 'easeInOutQuart'
+    // Total volume (weight × reps)
+    let totalVolume = workouts.reduce((sum, workout) => {
+        return sum + (parseFloat(workout.weight) * parseFloat(workout.reps));
+    }, 0);
+    document.getElementById('totalVolume').textContent = totalVolume.toLocaleString();
+    
+    // Calculate streak
+    let streak = calculateStreak(workouts);
+    document.getElementById('currentStreak').textContent = streak;
+    
+    // Personal bests (unique exercises)
+    let uniqueExercises = [...new Set(workouts.map(w => w.exercise))];
+    document.getElementById('personalBests').textContent = uniqueExercises.length;
+}
+
+function calculateStreak(workouts) {
+    if (workouts.length === 0) return 0;
+    
+    // Sort workouts by date
+    let sortedWorkouts = workouts.map(w => new Date(w.date)).sort((a, b) => b - a);
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let streak = 0;
+    let currentDate = new Date(today);
+    
+    for (let workoutDate of sortedWorkouts) {
+        workoutDate.setHours(0, 0, 0, 0);
+        let diffDays = Math.floor((currentDate - workoutDate) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0 || diffDays === 1) {
+            if (diffDays === 0 && streak === 0) {
+                streak = 1;
+            } else if (diffDays === 1) {
+                streak++;
+                currentDate = new Date(workoutDate);
             }
+        } else {
+            break;
         }
-    });
+    }
     
+    return streak;
+}
+
+// Animate stat values on load
+function animateValue(id, start, end, duration) {
+    let element = document.getElementById(id);
+    let range = end - start;
+    let current = start;
+    let increment = end > start ? 1 : -1;
+    let stepTime = Math.abs(Math.floor(duration / range));
+    
+    let timer = setInterval(function() {
+        current += increment;
+        element.textContent = current.toLocaleString();
+        if (current == end) {
+            clearInterval(timer);
+        }
+    }, stepTime);
+}
+
+window.addEventListener('load', function() {
     displayWorkoutHistory();
     displayWeightHistory();
+    updateDashboardStats();
+    
+    // Get current stats for animation
+    let workouts = JSON.parse(sessionStorage.getItem('workouts')) || [];
+    let totalWorkouts = workouts.length;
+    let totalVolume = workouts.reduce((sum, workout) => {
+        return sum + (parseFloat(workout.weight) * parseFloat(workout.reps));
+    }, 0);
+    
+    // Animate the numbers
+    setTimeout(() => {
+        animateValue('totalWorkouts', 0, totalWorkouts, 1000);
+        animateValue('totalVolume', 0, totalVolume, 1500);
+    }, 500);
 });

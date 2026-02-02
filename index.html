@@ -65,11 +65,59 @@
 
     <section class="card card-wide">
       <div class="card-header">
-        <h2>Progress Chart</h2>
+        <h2>Progression Dashboard</h2>
         <div class="icon">📈</div>
       </div>
-      <div class="chart-container">
-        <canvas id="progressChart"></canvas>
+      <div class="progress-grid">
+        <div class="stat-card">
+          <div class="stat-icon">💪</div>
+          <div class="stat-value" id="totalWorkouts">0</div>
+          <div class="stat-label">Total Workouts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏋️</div>
+          <div class="stat-value" id="totalVolume">0</div>
+          <div class="stat-label">Total Volume (lbs)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-value" id="currentStreak">0</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-value" id="personalBests">0</div>
+          <div class="stat-label">Personal Records</div>
+        </div>
+      </div>
+      <div class="progress-bars">
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-exercise">Bench Press</span>
+            <span class="progress-weight">225 lbs</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 85%"></div>
+          </div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-exercise">Squat</span>
+            <span class="progress-weight">315 lbs</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 70%"></div>
+          </div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-exercise">Deadlift</span>
+            <span class="progress-weight">405 lbs</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 92%"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -121,6 +169,5 @@
   </main>
 
   <script src="script.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
